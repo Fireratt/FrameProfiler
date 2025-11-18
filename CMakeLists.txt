@@ -11,8 +11,8 @@ option(ENABLE_PROFILING "Enable frame profiling support" ON)
 # ===============
 # 源文件
 # ===============
-set(PROFILER_PUBLIC_HEADER include/profiler/Profiler.h)
-set(PROFILER_SOURCES src/Profiler.cpp)
+set(PROFILER_PUBLIC_HEADER include/profiler/FrameProfiler.hpp)
+set(PROFILER_SOURCES src/FrameProfiler.cpp)
 
 # ===============
 # 创建库目标
