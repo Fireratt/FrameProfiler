@@ -1,6 +1,6 @@
 #if ENABLE_PROFILING
 
-#include "Profiler.h"
+#include "profiler/FrameProfiler.hpp"
 
 // --- ScopedTimer ---
 FrameProfiler::ScopedTimer::ScopedTimer(const char* name)
