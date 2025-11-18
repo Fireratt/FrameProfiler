@@ -1,43 +1,60 @@
-#if ENABLE_PROFILING
-
 #include "profiler/FrameProfiler.hpp"
 
-// --- ScopedTimer ---
-FrameProfiler::ScopedTimer::ScopedTimer(const char* name)
+#if ENABLE_PROFILING
+
+#include <mutex>
+#include <unordered_map>
+#include <vector>
+
+namespace profiler {
+
+using Clock = std::chrono::high_resolution_clock;
+using Microseconds = std::chrono::microseconds;
+
+struct FrameData {
+    std::unordered_map<std::string, long long> timesUs;
+};
+
+static std::mutex g_mutex;
+static FrameData g_currentFrame;
+static std::vector<FrameData> g_history;
+
+ScopedTimer::ScopedTimer(const char* name)
     : name_(name), start_(Clock::now()) {}
 
-FrameProfiler::ScopedTimer::~ScopedTimer() {
+ScopedTimer::~ScopedTimer() {
     auto end = Clock::now();
     auto dur = std::chrono::duration_cast<Microseconds>(end - start_).count();
 
-    std::lock_guard<std::mutex> lock(mutex_);
-    currentFrame_.timesUs[name_] += dur;
+    std::lock_guard<std::mutex> lock(g_mutex);
+    g_currentFrame.timesUs[name_] += dur;
 }
 
-// --- Frame control ---
-void FrameProfiler::BeginFrame() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    currentFrame_.timesUs.clear();
+void BeginFrame() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    g_currentFrame.timesUs.clear();
 }
 
-void FrameProfiler::EndFrame(int maxHistoryFrames) {
-    std::lock_guard<std::mutex> lock(mutex_);
+void EndFrame(int maxHistoryFrames) {
+    std::lock_guard<std::mutex> lock(g_mutex);
     if (maxHistoryFrames > 0) {
-        history_.push_back(currentFrame_);
-        if (static_cast<int>(history_.size()) > maxHistoryFrames) {
-            history_.erase(history_.begin());
+        g_history.push_back(g_currentFrame);
+        if (static_cast<int>(g_history.size()) > maxHistoryFrames) {
+            g_history.erase(g_history.begin());
         }
     }
 }
 
-void FrameProfiler::PrintCurrentFrameReport() {
-    std::lock_guard<std::mutex> lock(mutex_);
+void PrintCurrentFrameReport() {
+    std::lock_guard<std::mutex> lock(g_mutex);
     std::cout << "=== Frame Profiling Report ===\n";
-    for (const auto& [name, us] : currentFrame_.timesUs) {
+    for (const auto& [name, us] : g_currentFrame.timesUs) {
         double ms = us / 1000.0;
         std::cout << std::fixed << std::setprecision(2)
                   << name << ": " << ms << " ms\n";
     }
 }
+
+} // namespace profiler
 
 #endif // ENABLE_PROFILING
