@@ -1,6 +1,6 @@
 # 简单用例：
 ```cpp
-#define ENABLE_PROFILING
+#define ENABLE_PROFILING 1
 void StageB() {
     PROFILE_SCOPE("B");
     // ... work
