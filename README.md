@@ -1,4 +1,4 @@
-简单用例：
+# 简单用例：
 ```cpp
 #define ENABLE_PROFILING
 void StageB() {
@@ -24,4 +24,17 @@ int main() {
         }
     }
 }
+```
+
+# CMake集成
+
+```sh
+# 主项目 CMakeLists.txt
+cmake_minimum_required(VERSION 3.14)
+project(MyApp)
+
+add_subdirectory(profiler)  # 假设 profiler/ 与主 CMake 同级
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE profiler::profiler)
 ```
