@@ -3,7 +3,7 @@
 #if ENABLE_PROFILING
 
 #include <mutex>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 namespace profiler {
@@ -12,7 +12,7 @@ using Clock = std::chrono::high_resolution_clock;
 using Microseconds = std::chrono::microseconds;
 
 struct FrameData {
-    std::unordered_map<std::string, long long> timesUs;
+    std::map<std::string, long long> timesUs;
 };
 
 static std::mutex g_mutex;
@@ -29,7 +29,7 @@ ScopedTimer::~ScopedTimer() {
     std::lock_guard<std::mutex> lock(g_mutex);
     g_currentFrame.timesUs[name_] += dur;
 }
-
+// @TODO: 添加对当前帧的总时间计时
 void BeginFrame() {
     std::lock_guard<std::mutex> lock(g_mutex);
     g_currentFrame.timesUs.clear();
