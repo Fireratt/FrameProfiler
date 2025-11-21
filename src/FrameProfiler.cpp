@@ -27,12 +27,21 @@ ScopedTimer::~ScopedTimer() {
     auto dur = std::chrono::duration_cast<Microseconds>(end - start_).count();
 
     std::lock_guard<std::mutex> lock(g_mutex);
+    
+    // 检查是否已存在
+    bool existed = (g_currentFrame.timesUs.find(name_) != g_currentFrame.timesUs.end());
     g_currentFrame.timesUs[name_] += dur;
-}
-// @TODO: 添加对当前帧的总时间计时
+
+    // 如果是第一次出现，记录到 insertionOrder
+    if (!existed) {
+        g_currentFrame.insertionOrder.push_back(name_);
+    }
+}// @TODO: 添加对当前帧的总时间计时
 void BeginFrame() {
     std::lock_guard<std::mutex> lock(g_mutex);
     g_currentFrame.timesUs.clear();
+    g_currentFrame.insertionOrder.clear(); // 清空顺序记录
+
 }
 
 void EndFrame(int maxHistoryFrames) {
@@ -47,13 +56,17 @@ void EndFrame(int maxHistoryFrames) {
 
 void PrintCurrentFrameReport() {
     std::lock_guard<std::mutex> lock(g_mutex);
-    std::cout << "=== Frame Profiling Report ===\n";
-    for (const auto& [name, us] : g_currentFrame.timesUs) {
-        double ms = us / 1000.0;
-        std::cout << std::fixed << std::setprecision(2)
-                  << name << ": " << ms << " ms\n";
+    std::cout << "=== Frame Profiling Report (Insertion Order) ===\n";
+    for (const auto& name : g_currentFrame.insertionOrder) {
+        auto it = g_currentFrame.timesUs.find(name);
+        if (it != g_currentFrame.timesUs.end()) {
+            double ms = it->second / 1000.0;
+            std::cout << std::fixed << std::setprecision(2)
+                      << name << ": " << ms << " ms\n";
+        }
     }
 }
+
 
 } // namespace profiler
 
