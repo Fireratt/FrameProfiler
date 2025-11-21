@@ -13,6 +13,7 @@ using Microseconds = std::chrono::microseconds;
 
 struct FrameData {
     std::map<std::string, long long> timesUs;
+    std::vector<std::string> insertionOrder; // 记录首次出现的顺序
 };
 
 static std::mutex g_mutex;

@@ -25,6 +25,7 @@ public:
 private:
     const char* name_;
     std::chrono::high_resolution_clock::time_point start_;
+    
 };
 
 void BeginFrame();
