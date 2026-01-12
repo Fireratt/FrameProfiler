@@ -17,8 +17,6 @@ struct FrameData {
     std::map<std::string, long long> timesUs;
     std::vector<std::string> insertionOrder; // 记录首次出现的顺序
 };
-// 新增：记录帧开始时间
-static std::chrono::high_resolution_clock::time_point g_frameStart;
 
 static std::mutex g_mutex;
 static FrameData g_currentFrame;
