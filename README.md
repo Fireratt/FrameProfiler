@@ -41,6 +41,6 @@ target_link_libraries(my_app PRIVATE profiler::profiler)
 
 # TODOs
 
-1. @Fireratt: 加上父子结构Profiler， 目前嵌套ProfilerScope显示为平行Scope。
-
-2. @Fireratt: 加上每帧的总计时
+1. @Fireratt: 加上父子结构Profiler， 目前嵌套ProfilerScope显示为平行Scope。 
+ 
+2. @Fireratt: 加上每帧的总计时 √已完成

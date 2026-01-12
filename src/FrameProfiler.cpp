@@ -10,11 +10,15 @@ namespace profiler {
 
 using Clock = std::chrono::high_resolution_clock;
 using Microseconds = std::chrono::microseconds;
+// 新增：记录帧开始时间
+static std::chrono::high_resolution_clock::time_point g_frameStart;
 
 struct FrameData {
     std::map<std::string, long long> timesUs;
     std::vector<std::string> insertionOrder; // 记录首次出现的顺序
 };
+// 新增：记录帧开始时间
+static std::chrono::high_resolution_clock::time_point g_frameStart;
 
 static std::mutex g_mutex;
 static FrameData g_currentFrame;
@@ -42,11 +46,25 @@ void BeginFrame() {
     std::lock_guard<std::mutex> lock(g_mutex);
     g_currentFrame.timesUs.clear();
     g_currentFrame.insertionOrder.clear(); // 清空顺序记录
+    
+    // 记录帧开始时间
+    g_frameStart = std::chrono::high_resolution_clock::now();
 
 }
 
 void EndFrame(int maxHistoryFrames) {
     std::lock_guard<std::mutex> lock(g_mutex);
+    // 计算总帧时间（微秒）
+    auto frameEnd = std::chrono::high_resolution_clock::now();
+    auto totalUs = std::chrono::duration_cast<std::chrono::microseconds>(
+        frameEnd - g_frameStart
+    ).count();
+
+    // 将总时间作为特殊项插入（放在最前面或最后面，这里放最后）
+    const char* totalName = "FRAME_TOTAL";
+    g_currentFrame.timesUs[totalName] = totalUs;
+    g_currentFrame.insertionOrder.push_back(totalName);  // 确保它出现在报告中
+
     if (maxHistoryFrames > 0) {
         g_history.push_back(g_currentFrame);
         if (static_cast<int>(g_history.size()) > maxHistoryFrames) {
